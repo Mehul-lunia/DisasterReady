@@ -3,34 +3,27 @@ import ComponentTable from "./ComponentTable";
 import Loading from "./Loading";
 import ChartContainer from "./ChartContainer";
 import { motion } from "framer-motion";
+import { useContext } from "react";
+import { DataContext, PageNoContext } from "./StartPage";
 
+
+ // Make Data and Curr_Page_no global for the entire react project
 function CardComponentQuake() {
-  const [data, setData] = useState([]);
-  const [mag, setMag] = useState([]);
-  useEffect(() => {
-    fetch("http://127.0.0.1:5000/")
-      .then((result) => {
-        console.log(result);
-        if (result.status != 200) console.error("Some error occured!");
-        return result.json();
-      })
-      .then((res) => {
-        setData(res);
-        const arr = [];
-        for (let i = 0; i < 5; i++) {
-          arr.push([res[i].Region, res[i].Magnitude]);
-        }
-        arr.unshift(["Region", "Magnitude"]);
-        console.log(arr);
-        setMag(arr);
-      });
-  }, []);
+  const TotalData = useContext(DataContext);
+  const {pageNo} = useContext(PageNoContext);
 
+  let start_idx = (pageNo-1) * 5;
+  let end_idx = pageNo * 5;
+  const data = TotalData.slice(start_idx,end_idx);
+  const mag = [];
+  for(let i = 0; i<data.length; i++)
+    {
+      mag.push([data[i].Region,data[i].Magnitude]);
+    }
+  mag.unshift(["Region","Magnitude"]);
+  console.log(mag)
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        {mag.length == 0 && <Loading />}
-      </div>
       <div style={{ display: "flex", justifyContent: "center" }}>
         {data.length == 0 && <Loading />}
       </div>
@@ -39,7 +32,7 @@ function CardComponentQuake() {
         drag="x"
         dragConstraints={{ left: -100, right: 100 }}
       >
-        {mag.length > 0 && <ChartContainer mag={mag} />}
+        {data.length > 0 && <ChartContainer mag={mag} />}
       </motion.div>
       <motion.div
         whileHover={{ scale: 1.02 }}
